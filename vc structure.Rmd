@@ -1,0 +1,50 @@
+---
+title: "GLS syntax"
+author: "Adam Grottoli"
+date: "June 3, 2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(nlme)
+vf1Fixed <- varFixed(???my.covar) # fixed variance structure. Use when Variance is linearly related to variance covariate
+my.gls<- gls(explanatory.var ??? my.covar, weights = vf1Fixed, data = my.data)
+```
+
+```{r}
+vfPower <- varPower(form=???my.covar) # Variance has non-linear relationship with covariate. Do not use when covariate = 0 
+
+my.gls<- gls(explanatory.var ??? my.covar, weights = vf1Fixed, data = my.data)
+```
+
+```{r}
+vfExp <- varExp(form=???my.covar) # Variance has non-linear relationship with covariate. Use when covariate = 0 
+my.gls<- gls(explanatory.var ??? my.covar, weights = vfExp, data = my.data)
+```
+
+```{r}
+vfConstPower <- varConstPower(form=???my.covar) #Variance has non-linear relationship with covariate. Use when covariate has values close to 0 
+my.gls<- gls(explanatory.var ??? my.covar, weights = vfConstPower, data = my.data)
+```
+
+```{r}
+vfIdent <- varIdent(form=??? 1 | nom.var) #Different variance for each category of nominal variable
+my.gls<- gls(explanatory.var ??? my.covar, weights = vfIdent, data = my.data)
+```
+
+```{r}
+vfExp <- varExp(form=???my.covar |nom.var) #To allow for different ?? for each category of nominal variable
+my.gls<- gls(explanatory.var ??? my.covar * nom.var, weights = vfExp, data = my.data)
+```
+
+```{r}
+vfComb <- varComb (varIdent(form =??? 1 | nom.var) , varExp(form =??? my.covar) ) #Combines exponential and identity variance structures
+my.gls<- gls(explanatory.var ??? my.covar * nom.var, weights = vfIdent, data = my.data)
+```
+

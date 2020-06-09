@@ -1,0 +1,62 @@
+---
+title: "lme4 syntax"
+author: "Adam Grottoli"
+date: "April 20, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("C:/Users/Adam/Documents/R/R practice/Practice/CC-Linear-mixed-models-master")
+RIKZ=read.table('RIKZ.txt', header=TRUE)
+```
+
+```{r}
+library(lme4)
+library(dplyr)
+library(ggplot2)
+library(ggeffects)
+```
+
+```{r}
+RIKZ$fBeach <- factor(RIKZ$Beach) # make beach a factor
+RIKZ.lmer1 <- lmer(Richness ~ NAP + (1|fBeach), data = RIKZ) #use lme4 to run model with beach as a random intercept
+summary(RIKZ.lmer1)
+```
+residual variance: 3.060^2 = 9.30
+variance for the random intercept(d^2): 2.942^2 = 8.668
+
+```{r}
+pred.mm <- ggpredict(RIKZ.lmer1, terms = c("NAP"))
+pred.re <- ggpredict(RIKZ.lmer1, terms = c('NAP', 'fBeach'), type = 're')
+ggplot(pred.re) + 
+   geom_line(aes(x = x, y = predicted, colour = group)) +
+    geom_line(data = pred.mm, aes(x = x, y = predicted), size=1)
+     labs(x = "NAP", y = "Richness", title = "NAP Effects on Richness") + 
+   theme_minimal()
+```
+
+```{r}
+RIKZ.lmer2 <- lmer(Richness ~ NAP + (1 + NAP|fBeach), data = RIKZ) #random slope and intercept model
+summary(RIKZ.lmer2)
+```
+
+```{r}
+pred.mm2 <- ggpredict(RIKZ.lmer2, terms = c("NAP"))
+pred.re2 <- ggpredict(RIKZ.lmer2, terms = c('NAP', 'fBeach'), type = 're')
+ggplot(pred.re2) + 
+   geom_line(aes(x = x, y = predicted, colour = group)) +
+    geom_line(data = pred.mm2, aes(x = x, y = predicted), size=1)
+     labs(x = "NAP", y = "Richness", title = "NAP Effects on Richness") + 
+   theme_minimal()
+```
+
+```{r}
+RIKZ.lmer3 <- lmer(Richness ~ 1 + (1|fBeach), data = RIKZ) # random effects model
+summary((RIKZ.lmer3))
+```
+
+```{r}
+detach("package:lme4", unload=TRUE)
+```
+

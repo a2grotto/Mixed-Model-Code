@@ -1,0 +1,92 @@
+---
+title: "LME_syntax"
+author: "Adam Grottoli"
+date: "April 15, 2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("C:/Users/Adam/Documents/R/R practice/Practice/CC-Linear-mixed-models-master")
+library(ggplot2)
+library(lme4)
+load('dragons.Rdata')
+```
+
+```{r}
+hist(dragons$testScore)
+```
+
+```{r}
+dragons$bodyLength2 <- scale(dragons$bodyLength, center = TRUE, scale = TRUE)
+```
+
+```{r}
+basic.lm <- lm(testScore ~ bodyLength2, data = dragons)
+summary(basic.lm)
+```
+
+```{r}
+(prelim_plot <- ggplot(dragons, aes(x = bodyLength, y = testScore)) +
+  geom_point() +
+  geom_smooth(method = "lm"))
+```
+
+```{r}
+plot(basic.lm, which = 1)
+```
+
+```{r}
+plot(basic.lm, which = 2)
+```
+```{r}
+boxplot(testScore ~ mountainRange, data = dragons)
+```
+
+```{r}
+(colour_plot <- ggplot(dragons, aes(x = bodyLength, y = testScore, colour = mountainRange)) +
+  geom_point(size = 2) +
+  theme_classic() +
+  theme(legend.position = "none"))
+```
+
+```{r}
+(split_plot <- ggplot(aes(bodyLength, testScore), data = dragons) + 
+  geom_point() + 
+  facet_wrap(~ mountainRange) + # create a facet for each mountain range
+  xlab("length") + 
+  ylab("test score"))
+```
+
+```{r}
+mixed.lmer <- lmer(testScore ~ bodyLength2 + (1|mountainRange), data = dragons)
+summary(mixed.lmer) # large proportion of total variance explained by mountain range, also called the interclass correlation. If you have a high intraclass correlation you want to consider sampling from between many sites rather than within a few sites.
+```
+
+```{r}
+#3 sites were sampled within each mountain range (site a,b,c)
+#So each site is implicit. To create a proper nested model we must make each site explicit
+dragons <- within(dragons, sample <- factor(mountainRange:site))
+```
+
+```{r}
+mixed.lmer2 <- lmer(testScore ~ bodyLength2 + (1|mountainRange) + (1|sample), data = dragons) #a nested mixed model
+summary(mixed.lmer2)
+```
+
+```{r}
+#another option for the same result
+mixed.lmer2 <- lmer(testScore ~ bodyLength2 + (1|mountainRange) + (1|mountainRange:site), data = dragons)
+```
+
+```{r}
+ggplot(dragons, aes(x = bodyLength, y = testScore, colour = site)) +
+  facet_wrap(~mountainRange, nrow=3) +
+  geom_point() +
+  theme_classic() +
+  geom_line(data = cbind(dragons, pred = predict(mixed.lmer2)), aes(y = pred)) +
+  theme(legend.position = "none")
+```
+

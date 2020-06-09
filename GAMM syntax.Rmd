@@ -1,0 +1,19 @@
+---
+title: "GAMM syntax"
+output: html_notebook
+---
+
+
+
+```{r}
+My.gamm<- gam(response.var ??? s(explan.var, k=5, bs="tp") + s(site, k=12, bs="re"), data=my.data, method="REML", family="gaussian") #Single common smoother
+My.gamm2<- gam(response.var ??? s(explan.var, k=5, m=2) + s(explan.var, site, k=5, bs="fs", m=2), data=my.data, method="REML") #global smoother plus group-level smoothers that have the same wiggliness
+
+My.gamm3 <- gam(response.var ??? s(explan.var, k=5, m=2, bs="tp") + s(explan.var, by=site, k=5, m=1, bs="tp") + s(site, bs="re", k=12), data= my.data, method="REML") #global smoother plus group-level smoothers with differing wiggliness
+
+My.gamm4 <- gam(response.var ??? s(explan.var, site, k=5, bs="fs", m=2),data=my.data, method="REML") #Group-specific smoothers without a global smoother
+
+My.gamm5<- gam(response.var ??? s(explan.var, by=site, k=5, bs="tp", m=2) + s(site, bs="re", k=12), data= my.data,  method="REML") #. Group-specific smoothers with different wiggliness
+
+```
+
